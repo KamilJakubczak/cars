@@ -12,4 +12,5 @@ A simple car api for recruitment process
 
 
 # Packages
-- flake8 - for PEP8 verification
+- **flake8** - for PEP8 verification
+- **drf-spectacular** - for automated api swagger documentation
