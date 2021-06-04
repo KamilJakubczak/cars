@@ -13,6 +13,8 @@ services:
     app:
         build: .
         image: app
+        volumes:
+            - ./app:/app
         environment:
             - DB_PASSWORD=${DB_PASSWORD}
             - DB_NAME=${DB_NAME}
