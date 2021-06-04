@@ -1,0 +1,46 @@
+version: "3"
+services:
+    db:
+        image: postgres:12-alpine
+        volumes:
+            - app_db_django:/var/lib/postgresql/data
+        environment:
+            - POSTGRES_USER=${DB_USER}
+            - POSTGRES_DB=${DB_NAME}
+            - POSTGRES_PASSWORD=${DB_PASSWORD}
+        networks:
+            - net-app-db-django
+    app:
+        build: .
+        image: app
+        environment:
+            - DB_PASSWORD=${DB_PASSWORD}
+            - DB_NAME=${DB_NAME}
+            - DB_USER=${DB_USER}
+            - DB_HOST=${DB_HOST}
+            - DB_PORT=${DB_PORT}
+            - SECRET_KEY=${SECRET_KEY}
+            - DEBUG=${DEBUG}
+        networks:
+            - net-app-db-django
+            - app-app-django-net
+        depends_on:
+            - db
+    gateway:
+        image: nginx
+        volumes:
+            - ./nginx.conf:/etc/nginx/nginx.conf:ro
+        depends_on:
+            - app
+        networks:
+            - app-app-django-net
+        ports:
+            - 8000:8000
+volumes:
+    app_db_django:
+
+networks:
+    net-app-db-django:
+    app-app-django-net:
+
+
