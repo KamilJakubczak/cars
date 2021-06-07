@@ -40,3 +40,17 @@ class CarSerializer(serializers.ModelSerializer):
                                     model__iexact=car['model'])
         if exists:
             raise CarApiErrors.CarNotUnique
+
+
+class PopularSerializer(serializers.ModelSerializer):
+    # count_rate = serializers.SerializerMethodField(read_only=True)
+    class Meta:
+        model = Car
+        fields = ['id', 'make', 'model', 'count']
+
+    @staticmethod
+    def get_count_rate(car):
+        count = Rate.objects.filter(car_id=car.id).count()
+        return count
+
+
