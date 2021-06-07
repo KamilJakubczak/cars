@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from .models import Car, Rate
 from django.db.models import Sum
-from rest_framework.validators import ValidationError
+from .errors import CarApiErrors
+from cars.datasources import VpicDatasource, VpicCar
 
 
 class CarSerializer(serializers.ModelSerializer):
@@ -13,7 +14,14 @@ class CarSerializer(serializers.ModelSerializer):
 
     def validate(self, car):
         self.duplicate_validation(car)
+        self.external_check(car)
         return car
+
+    def external_check(self, car):
+        datasource = VpicDatasource()
+        v_car = VpicCar(car['make'], datasource)
+        if not v_car.has_model(car['model']):
+            raise CarApiErrors.ExternalApiCarNotFound
 
     @staticmethod
     def get_avg_rate(car):
@@ -31,4 +39,4 @@ class CarSerializer(serializers.ModelSerializer):
         exists = Car.objects.filter(make__iexact=car['make'],
                                     model__iexact=car['model'])
         if exists:
-            raise ValidationError('Not unique. Provided car already exists.')
+            raise CarApiErrors.CarNotUnique

@@ -4,3 +4,5 @@ gunicorn
 flake8
 djangorestframework
 drf-spectacular
+requests
+mock

@@ -1,10 +1,14 @@
+import mock
 from django.test import TestCase
 from django.urls import reverse
 
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from . import models
+from cars import models
+from cars.errors import CarApiErrors
+
+from cars.datasources import VpicCar
 
 CARS_URL = reverse('api:cars-list')
 
@@ -32,21 +36,40 @@ class CarsTests(TestCase):
     def setUp(self):
         self.client = APIClient()
 
-    def test_create_car_successful(self):
+# TODO doeck na test błędua
+    @mock.patch('cars.datasources.external_api.VpicCar.has_model', return_value=True)
+    def test_create_car_successful(self, mocked_fn):
         res = self.client.post(CARS_URL, self.CAR_1)
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
-    def test_create_car_duplication_error(self):
+    @mock.patch('cars.datasources.external_api.VpicCar.has_model', return_value=False)
+    def test_create_car_non_existing_car_external(self, mocked_fn):
+        res = self.client.post(CARS_URL, self.CAR_1)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            CarApiErrors.ExternalApiCarNotFound.message,
+            res.json()['message'])
+
+    @mock.patch('cars.datasources.external_api.VpicCar.has_model', return_value=True)
+    def test_create_car_duplication_error(self, mocked_fn):
         self.client.post(CARS_URL, self.CAR_1)
         res2 = self.client.post(CARS_URL, self.CAR_1)
         self.assertEqual(res2.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            CarApiErrors.CarNotUnique.message,
+            res2.json()['message'])
 
-    def test_create_car_duplication_case_insensitive_error(self):
+    @mock.patch('cars.datasources.external_api.VpicCar.has_model', return_value=True)
+    def test_create_car_duplication_case_insensitive_error(self, mocked_fn):
         self.client.post(CARS_URL, self.CAR_1)
         res2 = self.client.post(CARS_URL, self.CAR_1_lower)
         self.assertEqual(res2.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            CarApiErrors.CarNotUnique.message,
+            res2.json()['message'])
 
-    def test_create_multiple_cars(self):
+    @mock.patch('cars.datasources.external_api.VpicCar.has_model', return_value=True)
+    def test_create_multiple_cars(self, mocked_fn):
         self.client.post(CARS_URL, self.CAR_1)
         self.client.post(CARS_URL, self.CAR_2)
         cars = models.Car.objects.all()
@@ -63,6 +86,7 @@ class CarsTests(TestCase):
         details_url = get_car_details_url(-99)
         res = self.client.delete(details_url)
         self.assertEqual(res.status_code, 404)
+        self.assertEqual('Not found.', res.json()['message'])
 
     def test_get_single_existing(self):
         car = models.Car.objects.create(**self.CAR_1)
