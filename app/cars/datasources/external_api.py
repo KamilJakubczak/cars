@@ -27,11 +27,15 @@ class VpicDatasource(CarDatasource):
         self.make_url = self.URL % make
 
     def _get_external_response(self):
-        self.response = r.get(self.make_url)
+        res = r.get(self.make_url)
+        return res
+
+    def _set_response(self):
+        self.response = self._get_external_response()
 
     def get_models_for_make(self, make: str) -> list:
         self._get_models_url(make)
-        self._get_external_response()
+        self._set_response()
         dict_data = self.response.json()
         return [row['Model_Name'] for row in dict_data['Results']]
 

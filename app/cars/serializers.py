@@ -1,16 +1,16 @@
 from rest_framework import serializers
-from .models import Car, Rate
 from django.db.models import Sum
-from .errors import CarApiErrors
-from cars.datasources import VpicDatasource, VpicCar
+from .errors import CarApiErrors, RateApiErrors
+from .datasources import VpicDatasource, VpicCar
+from .models import Car, Rate
 
 
 class CarSerializer(serializers.ModelSerializer):
-    avg_rate = serializers.SerializerMethodField(read_only=True)
+    avg_rating = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Car
-        fields = ['id', 'make', 'model', 'avg_rate']
+        fields = ['id', 'make', 'model', 'avg_rating']
 
     def validate(self, car):
         self.duplicate_validation(car)
@@ -24,15 +24,15 @@ class CarSerializer(serializers.ModelSerializer):
             raise CarApiErrors.ExternalApiCarNotFound
 
     @staticmethod
-    def get_avg_rate(car):
+    def get_avg_rating(car):
         rate = Rate.objects.filter(car_id=car.id).aggregate(Sum('rate'))[
             'rate__sum']
         count = Rate.objects.filter(car_id=car.id).count()
         try:
-            avg_rate = rate / count
+            avg_rating = rate / count
         except TypeError:
-            avg_rate = None
-        return avg_rate
+            avg_rating = None
+        return avg_rating
 
     @staticmethod
     def duplicate_validation(car):
@@ -43,14 +43,32 @@ class CarSerializer(serializers.ModelSerializer):
 
 
 class PopularSerializer(serializers.ModelSerializer):
-    # count_rate = serializers.SerializerMethodField(read_only=True)
+    rates_number = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = Car
-        fields = ['id', 'make', 'model', 'count']
+        fields = ['id', 'make', 'model', 'rates_number']
 
     @staticmethod
-    def get_count_rate(car):
-        count = Rate.objects.filter(car_id=car.id).count()
-        return count
+    def get_rates_number(car):
+        rates_number = Rate.objects.filter(car_id=car.id).count()
+        return rates_number
 
 
+class RateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rate
+        fields = ['id', 'car_id', 'rate']
+
+    def validate(self, rate):
+        self.rate_validation(rate['rate'])
+        return rate
+
+    @staticmethod
+    def rate_validation(rate):
+        if not isinstance(rate, int):
+            raise RateApiErrors.InvalidRateType
+        if rate < 1:
+            raise RateApiErrors.InvalidRateMin
+        if rate > 5:
+            raise RateApiErrors.InvalidRateMax
