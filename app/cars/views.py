@@ -18,6 +18,6 @@ class PopularViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
 
 class RateViewSet(mixins.CreateModelMixin,
-                 viewsets.GenericViewSet):
+                  viewsets.GenericViewSet):
     queryset = Rate.objects.all()
     serializer_class = RateSerializer

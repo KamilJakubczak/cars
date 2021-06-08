@@ -6,3 +6,4 @@ djangorestframework
 drf-spectacular
 requests
 mock
+coverage

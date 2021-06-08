@@ -29,7 +29,7 @@ class CarSerializer(serializers.ModelSerializer):
             'rate__sum']
         count = Rate.objects.filter(car_id=car.id).count()
         try:
-            avg_rating = rate / count
+            avg_rating = round(rate / count, 1)
         except TypeError:
             avg_rating = None
         return avg_rating

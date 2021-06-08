@@ -1,23 +1,36 @@
+import mock
+import json
+from .test_base import TestBase, EXTERNAL_RESPONSE_FIAT, \
+    EXTERNAL_MODELS_FOR_FIAT
 from cars.datasources import VpicDatasource, VpicCar
 
-from django.test import TestCase
 
-
-class VpicTests(TestCase):
+class TestVpicDatabase(TestBase):
 
     def test_url_creation(self):
         v = VpicDatasource()
         v._get_models_url('honda')
-        expected_url ='https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMake/honda?format=json'
+        expected_url = 'https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMake/honda?format=json'
         self.assertEqual(v.make_url, expected_url)
 
 
-class VpicCarTests(TestCase):
+class TestVpicCar(TestBase):
 
-    def test_check_model_in_make(self):
-        v_datasource = VpicDatasource()
-        car = VpicCar('honda', v_datasource)
-        has_model = car.has_model('civic')
-        not_have_model = car.has_model('passat')
-        self.assertTrue(has_model)
-        self.assertFalse(not_have_model)
+    @mock.patch('requests.get')
+    def test_get_models(self, mocked_fn):
+        mocked_fn.return_value = mock.Mock()
+        mocked_fn.return_value.json.return_value = json.loads(
+            EXTERNAL_RESPONSE_FIAT)
+        vpic_datasource = VpicDatasource()
+        models = vpic_datasource.get_models_for_make('Fiat')
+        self.assertEqual(models, EXTERNAL_MODELS_FOR_FIAT)
+
+    @mock.patch('requests.get')
+    def test_has_model(self, mocked_fn):
+        mocked_fn.return_value = mock.Mock()
+        mocked_fn.return_value.json.return_value = json.loads(
+            EXTERNAL_RESPONSE_FIAT)
+        vpic_datasource = VpicDatasource()
+        vpic = VpicCar('Fiat', vpic_datasource)
+        self.assertTrue(vpic.has_model('500'))
+        self.assertFalse(vpic.has_model('Passat'))

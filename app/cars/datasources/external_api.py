@@ -1,17 +1,18 @@
 import requests as r
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from config import Config
 
 
 class CarDatasource(ABC):
 
     @abstractmethod
     def get_models_for_make(self, make: str) -> list:
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class VpicDatasource(CarDatasource):
-    URL = 'https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMake/%s?format=json'
+
+    URL = Config.VPIC_URL
 
     def __init__(self):
         self._make = None
@@ -57,7 +58,8 @@ class VpicCar:
         return self._available_models
 
     def _get_available_models(self):
-        self._available_modes = self._datasource.get_models_for_make(self._make)
+        self._available_modes = self._datasource.get_models_for_make(
+            self._make)
 
     def has_model(self, model: str) -> bool:
         if model.lower() in [m.lower() for m in self._available_modes]:
