@@ -25,7 +25,7 @@ https://wwww.itbs.dev
 # API Documentation
 API documentation can be found on **/swagger**
 
-https://wwww.itbs.dev/swagger
+https://www.itbs.dev/swagger
 
 # How to handle application
 
@@ -34,6 +34,7 @@ Go to directory with **docker-compose.yml** file then type
 in terminal
 ```shell
 docker-compouse up --build
+docker-compose run app sh -c "migrate"
 ```
 
 ## How to run application 
