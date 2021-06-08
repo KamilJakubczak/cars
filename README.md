@@ -2,7 +2,7 @@
 A simple car api
 
 # Link
-https://wwww.itbs.dev
+https://www.itbs.dev
 
 # Technology stack
 - Django
