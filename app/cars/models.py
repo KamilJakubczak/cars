@@ -14,4 +14,4 @@ class Car(models.Model):
 
 class Rate(models.Model):
     car_id = models.ForeignKey(Car, on_delete=models.CASCADE)
-    rate = models.IntegerField()
+    rating = models.IntegerField()

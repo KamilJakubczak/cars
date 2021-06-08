@@ -15,9 +15,9 @@ class TestPopular(TestBase):
         car = models.Car.objects.create(**self.CAR_1)
         car2 = models.Car.objects.create(**self.CAR_2)
 
-        models.Rate.objects.create(car_id=car2, rate=4)
-        models.Rate.objects.create(car_id=car, rate=4)
-        models.Rate.objects.create(car_id=car, rate=4)
+        models.Rate.objects.create(car_id=car2, rating=4)
+        models.Rate.objects.create(car_id=car, rating=4)
+        models.Rate.objects.create(car_id=car, rating=4)
 
         res = self.client.get(POPULAR_URL)
 

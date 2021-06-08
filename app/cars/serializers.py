@@ -25,8 +25,8 @@ class CarSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_avg_rating(car):
-        rate = Rate.objects.filter(car_id=car.id).aggregate(Sum('rate'))[
-            'rate__sum']
+        rate = Rate.objects.filter(car_id=car.id).aggregate(Sum('rating'))[
+            'rating__sum']
         count = Rate.objects.filter(car_id=car.id).count()
         try:
             avg_rating = round(rate / count, 1)
@@ -58,10 +58,10 @@ class PopularSerializer(serializers.ModelSerializer):
 class RateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rate
-        fields = ['id', 'car_id', 'rate']
+        fields = ['id', 'car_id', 'rating']
 
     def validate(self, rate):
-        self.rate_validation(rate['rate'])
+        self.rate_validation(rate['rating'])
         return rate
 
     @staticmethod
